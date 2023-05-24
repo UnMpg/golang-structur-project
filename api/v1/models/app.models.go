@@ -7,6 +7,16 @@ type Response struct {
 	Response   interface{} `json:"response"`
 }
 
+type StructureResponse struct {
+	Code int
+	Res  Response
+}
+
+type RespLogin struct {
+	RoleUser string `json:"roleUser"`
+	Token    string `json:"token"`
+}
+
 func (r Response) CreateResponse(statusCode int, status string, message string, response interface{}) Response {
 	return Response{StatusCode: statusCode, Status: status, Message: message, Response: response}
 }

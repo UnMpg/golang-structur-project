@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"fmt"
 	"gin-api-test/api/v1/models"
 	"gin-api-test/config"
 	"gin-api-test/db/migrations"
 	"gin-api-test/helpers/email"
 	"gin-api-test/helpers/encode"
+	"gin-api-test/helpers/jwt_token"
 	"gin-api-test/helpers/log"
 	"gin-api-test/helpers/password"
 	"gin-api-test/repository/userRepository"
@@ -27,6 +29,7 @@ func NewUserUsecase(UserRepo userRepository.UserRepository) UserUsecase {
 }
 
 func (uc *UserUsecase) GetList(c *gin.Context) {
+	fmt.Println("ini context", c)
 	tes := uc.URepository.GetListUser(c, "INI dia adalaha isi")
 	c.JSON(http.StatusOK, models.CreateResponse(http.StatusOK, "success", "success", tes))
 }
@@ -101,4 +104,54 @@ func (uc *UserUsecase) SingUpUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.CreateResponse(http.StatusOK, "success", "Data berhasil tersimpan", resultResponse))
+}
+
+func (uc *UserUsecase) SingInUser(c *gin.Context) {
+	var req *models.SingIn
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Log.Error("Error binding JSON Input")
+		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "Failed", err.Error(), nil))
+		return
+	}
+
+	result, err := uc.URepository.GetUserByEmail(req.Email)
+	if err != nil {
+		log.Log.Error("User Not Found")
+		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "failed", err.Error(), nil))
+		return
+	}
+
+	if !result.Verified {
+		log.Log.Error("Email not verify")
+		c.JSON(http.StatusForbidden, models.CreateResponse(http.StatusForbidden, "failed", "Please verify your Email", nil))
+		return
+	}
+
+	if err := password.VerifyPassword(result.Password, req.Password); err != nil {
+		log.Log.Error("error password not match")
+		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "fail", err.Error(), nil))
+		return
+	}
+
+	accessToken, err := jwt_token.CreateToken(config.MyEnv.AccTokenExpireIn, result.ID, config.MyEnv.AccTokenPrivateKey)
+	if err != nil {
+		log.Log.Error("Error to create token")
+		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "failed", err.Error(), nil))
+		return
+	}
+	refreshToken, err := jwt_token.CreateToken(config.MyEnv.RefTokenExpireIn, result.ID, config.MyEnv.RefTokenPrivateKey)
+	if err != nil {
+		log.Log.Error("Error to create token")
+		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "failed", err.Error(), nil))
+		return
+	}
+	c.SetCookie("access_token", accessToken, config.MyEnv.AccTokenMaxEge*60, "/", "localhost", false, true)
+	c.SetCookie("refresh_token", refreshToken, config.MyEnv.RefTokenMaxAge*60, "/", "localhost", false, true)
+	c.SetCookie("logged_in", "true", config.MyEnv.AccTokenMaxEge*60, "/", "localhost", false, false)
+	respLogin := models.RespLogin{
+		RoleUser: result.Role,
+		Token:    accessToken,
+	}
+	c.JSON(http.StatusOK, models.CreateResponse(http.StatusOK, "Success", "success", respLogin))
 }

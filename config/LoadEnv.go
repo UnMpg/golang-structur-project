@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/spf13/viper"
 	"log"
+	"time"
 )
 
 type Config struct {
@@ -16,14 +17,14 @@ type Config struct {
 	ServerPort     string `mapstructure:"SERVER_PORT"`
 	Timeout        int    `mapstructure:"TIMEOUT"`
 
-	AccTokenPrivateKey string `mapstructure:"ACCESS_TOKEN_PRIVATE_KEY"`
-	AccTokenPublicKey  string `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY"`
-	AccTokenExpireIn   string `mapstructure:"ACCESS_TOKEN_EXPIRED_IN"`
-	AccTokenMaxEge     string `mapstructure:"ACCESS_TOKEN_MAXAGE"`
-	RefTokenPrivateKey string `mapstructure:"REFRESH_TOKEN_PRIVATE_KEY"`
-	RefTokenPublicKey  string `mapstructure:"REFRESH_TOKEN_PUBLIC_KEY"`
-	RefTokenExpireIn   string `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`
-	RefTokenMaxAge     string `mapstructure:"REFRESH_TOKEN_MAXAGE"`
+	AccTokenPrivateKey string        `mapstructure:"ACCESS_TOKEN_PRIVATE_KEY"`
+	AccTokenPublicKey  string        `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY"`
+	AccTokenExpireIn   time.Duration `mapstructure:"ACCESS_TOKEN_EXPIRED_IN"`
+	AccTokenMaxEge     int           `mapstructure:"ACCESS_TOKEN_MAXAGE"`
+	RefTokenPrivateKey string        `mapstructure:"REFRESH_TOKEN_PRIVATE_KEY"`
+	RefTokenPublicKey  string        `mapstructure:"REFRESH_TOKEN_PUBLIC_KEY"`
+	RefTokenExpireIn   time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRED_IN"`
+	RefTokenMaxAge     int           `mapstructure:"REFRESH_TOKEN_MAXAGE"`
 
 	EmailFrom    string `mapstructure:"EMAIL_FROM"`
 	SmtpHost     string `mapstructure:"SMTP_HOST"`

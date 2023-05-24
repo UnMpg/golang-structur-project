@@ -24,7 +24,7 @@ func CreateRoute(isDev bool) *gin.Engine {
 	return router
 }
 
-func UserRouteV1(r *gin.Engine) {
+func RouteV1(r *gin.Engine) {
 	dbPg, err := connect.GetConnectionDB()
 	if err != nil {
 		log.Log.Error("Error Connection to Postgres ", err.Error())
@@ -34,17 +34,25 @@ func UserRouteV1(r *gin.Engine) {
 
 	UserRepository := userRepository.NewUserRepository(dbPg)
 	UserUsecase := usecase.NewUserUsecase(UserRepository)
-
 	handlers.NewUserHandlerV1(v1Userroute, UserUsecase)
-
 	//v1Userroute.GET("/", func(c *gin.Context) {
 	//	log.Log.Info("Nama saya", "ini aja ", "tes dulu")
 	//	c.JSON(http.StatusOK, models.CreateResponse(http.StatusOK, "success", "Halaman User", nil))
 	//
 	//})
 
-	//v1Userroute.GET("/login", handlers.LoginUser)
-	//v1Userroute.GET("/register", handlers.RegisterUser)
-	//v1Userroute.GET("/refresh", handlers.LoginUser)
+}
+
+func PrivateV1(r *gin.Engine) {
+	dbPg, err := connect.GetConnectionDB()
+	if err != nil {
+		log.Log.Error("Error Connection to Postgres ", err.Error())
+	}
+	v1UserPrivate := r.Group("/private/v1")
+	v1UserPrivate.Use(middleware.CekUserMiddleware())
+
+	UserRepository := userRepository.NewUserRepository(dbPg)
+	UserUsecase := usecase.NewUserUsecase(UserRepository)
+	handlers.NewPrivateHandlerV1(v1UserPrivate, UserUsecase)
 
 }

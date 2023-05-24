@@ -38,3 +38,12 @@ func (r *UserRepository) SingUpUser(newUser *migrations.User) error {
 func (r *UserRepository) SingUpUserSaveVerification(newUser migrations.User) {
 	r.DB.Save(newUser)
 }
+
+func (r *UserRepository) GetUserByEmail(email string) (migrations.User, error) {
+	var user migrations.User
+	record := r.DB.First(&user, "email = ?", strings.ToLower(email))
+	if record.Error != nil {
+		return user, record.Error
+	}
+	return user, nil
+}

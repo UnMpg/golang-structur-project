@@ -31,7 +31,8 @@ func main() {
 	r.HandleMethodNotAllowed = true
 	r.NoMethod(middleware.HandleNoMethod)
 	r.NoRoute(middleware.HandleNoRoute)
-	routes.UserRouteV1(r)
+	routes.RouteV1(r)
+	routes.PrivateV1(r)
 
 	timeout := time.Duration(config.MyEnv.Timeout) * time.Second
 	newHandler := http.TimeoutHandler(r, timeout, "Timeout!")
