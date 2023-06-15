@@ -2,8 +2,10 @@ package jwt_token
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"gin-api-test/config"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
@@ -90,4 +92,13 @@ func ValidateTokenHeader(token string) (string, error) {
 		return " ", fmt.Errorf("validate:invalid token")
 	}
 	return claims["user_id"].(string), nil
+}
+
+func GetUserID(c *gin.Context) (string, error) {
+
+	uid, valid := c.Get("userId")
+	if !valid {
+		return "", errors.New("undifined User ID")
+	}
+	return uid.(string), nil
 }

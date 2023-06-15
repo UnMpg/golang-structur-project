@@ -33,6 +33,7 @@ func MiddlewareImp(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("ini user id", getUserId)
 	c.Set("userId", getUserId)
 	c.Set("token", token)
 }

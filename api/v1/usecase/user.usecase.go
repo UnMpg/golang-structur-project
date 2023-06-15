@@ -13,7 +13,6 @@ import (
 	"gin-api-test/repository/userRepository"
 	"github.com/gin-gonic/gin"
 	"github.com/thanhpk/randstr"
-	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"time"
@@ -21,7 +20,6 @@ import (
 
 type UserUsecase struct {
 	URepository userRepository.UserRepository
-	DB          *gorm.DB
 }
 
 func NewUserUsecase(UserRepo userRepository.UserRepository) UserUsecase {
@@ -60,14 +58,15 @@ func (uc *UserUsecase) SingUpUser(c *gin.Context) {
 		Name:      req.Name,
 		Email:     strings.ToLower(req.Email),
 		Password:  hashedPassoword,
-		Role:      "User",
+		Role:      "user",
 		Verified:  true,
 		Photo:     req.Photo,
 		Provider:  "local",
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
-
+	fmt.Println("cek 1 adalah")
+	fmt.Println("hasil input", newUser)
 	if err := uc.URepository.SingUpUser(&newUser); err != nil {
 		log.Log.Error("Error to Insert data")
 		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "fail", err.Error(), nil))
@@ -77,8 +76,13 @@ func (uc *UserUsecase) SingUpUser(c *gin.Context) {
 	code := randstr.String(20)
 	verificationCode := encode.Encode(code)
 
+	fmt.Println("cek 2 adalah")
 	newUser.VerificationCode = verificationCode
-	uc.URepository.SingUpUserSaveVerification(newUser)
+	if err := uc.URepository.SingUpUserSaveVerification(newUser); err != nil {
+		log.Log.Error("Error to Insert data")
+		c.JSON(http.StatusBadRequest, models.CreateResponse(http.StatusBadRequest, "fail", err.Error(), nil))
+		return
+	}
 
 	var firstName = newUser.Name
 	if strings.Contains(firstName, " ") {
